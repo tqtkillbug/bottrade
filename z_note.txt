@@ -1,0 +1,3 @@
+When loop request some time exception:
+ExchangeNotAvailable: binance GET https://api.binance.com/api/v3/klines?interval=1d&limit=500&symbol=BTCUSDT&startTime=1663459200001 system request to https://api.binance.com/api/v3/klines?interval=1d&limit=500&symbol=BTCUSDT&startTime=1663459200001 failed, reason: read ECONNRESET
+    at FectchData.loopFetchSymbol (C:\Users\ADMIN\Desktop\Tetst ccxt\service\fetch-data.js:67:23)
