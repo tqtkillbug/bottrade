@@ -22,7 +22,7 @@ module.exports = {
   },
 
   getSymbolInfo: (req,res, next)=>{
-    handlePromise(res, next, udf.symbols(req.query.symbol))
+    handlePromise(res, next, udf.symbolInfo(req.query.symbol))
   },
 
   searchSymbol :(req,res, next)=>{

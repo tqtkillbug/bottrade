@@ -8,6 +8,7 @@ const ccxt = require('ccxt');
 const {
     performance
 } = require('perf_hooks');
+const logger = require("../common/logger");
 var mapSince = new Map()
 class FectchData {
     constructor() {
@@ -16,8 +17,6 @@ class FectchData {
         });
         this.exchangeId = this.exchange.id.toUpperCase();
         this.timeframes = ["1m", "15m", "1h", "4h", "1d"];
-        this.symbols = ["BTCUSDT", "ETHUSDT", "ADAUSDT", "XRPUSDT", "SOLUSDT", "MATICUSDT", "ETCUSDT", 'LINKUSDT', 'FTTUSDT', 'ATOMUSDT', "LUNCUSDT"];
-        this.since = undefined;
     }
 
     async initDataToBd() {
@@ -25,66 +24,77 @@ class FectchData {
         // await this.fetchOHLCV();
     }
 
-    async fecthLstSymbolValid(){
+    async fecthLstSymbolValid() {
         const listSymbobValid = await Symbol.find({
-           isValid : 1,
-           exchange : this.exchangeId
+            isValid: 1,
+            exchange: this.exchangeId
         });
-
-      return listSymbobValid;
-  }
+        return listSymbobValid;
+    }
 
 
     async loopTimeframe(symbol) {
         try {
             const lstTime = this.timeframes;
-            const loopDataSymbolByTimeframe = lstTime.map(t => this.loopFetchSymbol(symbol,t));
-            await Promise.all(loopDataSymbolByTimeframe);
+            for await (const time of lstTime) {
+                await this.loopFetchSymbol(symbol, time)
+            }
+            return true;
         } catch (error) {
-            throw new Error();     
+            logger.error(error);
+            throw new Error();
         }
 
     }
 
     async loopFetchSymbol(symbol, timeframe) {
-            try {
-                let since = mapSince.get(`${symbol}_${timeframe}`);
-                console.log(`${symbol}_${timeframe}_${since}`);
-                const ohlcvs = await this.exchange.fetchOHLCV(symbol, timeframe,since);
-                const lstData = ohlcvs.map(s => this.convertDataOhlcv(s, symbol, timeframe));
-                if (ohlcvs.length > 50) {
-                    await Ohlcv.insertMany(lstData).then(function () {}).catch(function (error) {
-                        throw new Error(error);
-                    });
-                    mapSince.set(`${symbol}_${timeframe}`,ohlcvs[ohlcvs.length - 11][0]);
-                } else {
-                    console.log(`Close price Binance ${lstData[lstData.length-1].close}_time_${lstData[lstData.length-1].timestamp}_timeFrame_${timeframe}`);
-                    await this.loopUpdateToDb(lstData);
-                    //    await this.exchange.sleep(500)
-                }
-                await this.exchange.sleep(1500)
-            } catch (e) {
-                throw new Error(e);
+        try {
+            let since = mapSince.get(`${symbol}_${timeframe}`);
+            logger.info(`Fetching From Binance_${symbol}_${timeframe}_${since}`)
+            const ohlcvs = await this.exchange.fetchOHLCV(symbol, timeframe, since);
+            const lstData = ohlcvs.map(s => this.convertDataOhlcv(s, symbol, timeframe));
+            if (ohlcvs.length > 50) {
+                await Ohlcv.insertMany(lstData).then(function () {
+                    logger.info(`Insert success_${symbol}_${timeframe}_${since}`)
+                    mapSince.set(`${symbol}_${timeframe}`, ohlcvs[ohlcvs.length - 11][0]);
+                }).catch(function (error) {
+                   logger.error(error);
+                    throw new Error(error);
+                });
+            } else {
+                await this.loopUpdateToDb(lstData,symbol, timeframe);
             }
+            await this.exchange.sleep(800)
+        } catch (e) {
+            logger.error(error);
+            throw new Error(e);
+        }
     }
 
 
+
+
     async fetchOHLCV() {
-        await Ohlcv.collection.drop();
         try {
+            logger.info("Start Fetch OHLCV From Binance To Mongo DB");
             await this.exchange.loadMarkets();
+            const listSymbolValid = await this.fecthLstSymbolValid();
+            mapSince = await this.getTimeStapOfSymbol();
             while (true) {
-              await this.loopTimeframe("BTCUSDT");
+                logger.info("New loop Symbol");
+                for await (const s of listSymbolValid) {
+                    await this.loopTimeframe(s.symbolName);
+                }
             }
         } catch (error) {
+            logger.error(error);
             throw new Error(error);
         }
     }
 
-    async loopUpdateToDb(list) {
+    async loopUpdateToDb(list,symbol, timeframe) {
         try {
             let count = 0;
-            var startTime = performance.now()
             for (let i = 0; i < list.length; i++) {
                 const e = list[i];
                 let updatedE = await Ohlcv.findOneAndUpdate({
@@ -106,14 +116,14 @@ class FectchData {
                     count++;
                 }
             }
-            var endTime = performance.now()
-            console.log(`Update ` + count + ` document with ${(endTime - startTime)}s`);
+            logger.info(`Update: ${count} | Symbol: ${symbol} | Time: ${timeframe}`);
         } catch (error) {
+            logger.error(error);
             throw new Error(error)
         }
     }
 
-   
+
     async fetchSymbolToDb() {
         try {
             const symbols = await this.exchange.fetchTickers();
@@ -122,20 +132,41 @@ class FectchData {
                 .filter(e => {
                     return e.symbol.includes("USDT");
                 });
-        //    for (let o = 0; o < listSymbol.length; o++) {
-        //     if (o < 50) {
-        //         listSymbol[o].isValid = 1;
-        //         listSymbol[o].symbolName += "_USE";
-        //     }      
-        //    }
+            //    for (let o = 0; o < listSymbol.length; o++) {
+            //     if (o < 50) {
+            //         listSymbol[o].isValid = 1;
+            //         listSymbol[o].symbolName += "_USE";
+            //     }      
+            //    }
             Symbol.insertMany(listSymbol).then(function (result) {
                 console.log("Insert Symbol Success");
             })
         } catch (error) {
+            logger.error(error);
             throw new Error(error);
         }
 
 
+    }
+
+    async getTimeStapOfSymbol(){
+        let mapSinceDB = new Map();
+        const symbolsValid = await this.fecthLstSymbolValid();
+        const lstTimeFrame = this.timeframes;
+        for await (const symbol of symbolsValid) {
+            for await (const time of lstTimeFrame) {
+                const ohlcvMaxTimeStamp = await Ohlcv.find({symbol:symbol.symbolName, timeframe: time})
+                                                          .sort({timestamp : -1}).limit(1);
+                    if (ohlcvMaxTimeStamp[0]) {
+                    mapSinceDB.set(`${symbol.symbolName}_${time}`,ohlcvMaxTimeStamp[0].timestamp);
+                } else {
+                   
+                    mapSinceDB.set(`${symbol.symbolName}_${time}`,undefined);
+                }
+            }
+        }
+        console.log(mapSinceDB);
+        return mapSinceDB;
     }
 
     convertDataOhlcv(s, symbol, time) {

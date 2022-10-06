@@ -63,10 +63,12 @@ class UDF {
         }
     }
 
-    async symbols(symbol) {
+    async symbolInfo(symbol) {
+            console.log(symbol);
             const symbolInfo = await Symbol.findOne({
                 symbolName: symbol,
             })
+            console.log(symbolInfo);
             return {
                 symbol: symbolInfo.symbolName,
                 ticker: symbolInfo.symbolName,
@@ -148,7 +150,7 @@ class UDF {
                 timeframe: interval,
                 timestamp: {"$gte" : from},
             });
-            console.log(`Price from DB_${ohlcvs[ohlcvs.length-1].close}_time_${ohlcvs[ohlcvs.length-1].timestamp}`);
+            // console.log(`Price from DB_${ohlcvs[ohlcvs.length-1].close}_time_${ohlcvs[ohlcvs.length-1].timestamp}`);
             // console.log(ohlcvs);
             totalKlines = totalKlines.concat(ohlcvs)
             return {
@@ -181,7 +183,7 @@ class UDF {
             full_name: s.symbolName,
             description: s.symbol,
             exchange: s.exchange,
-            ticker: s.symbol,
+            ticker: s.symbolName,
             type: 'crypto'
         }))
     }

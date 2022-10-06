@@ -31,6 +31,7 @@ mongoose.connect(MONGODB_URL, {
     useUnifiedTopology: true
 },() => {
   console.log("Mongo is ready!!!!");
+  // fectchDataService.getTimeStapOfSymbol();
   fectchDataService.fetchOHLCV();
 })
 
