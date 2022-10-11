@@ -132,12 +132,12 @@ class FectchData {
                 .filter(e => {
                     return e.symbol.includes("USDT");
                 });
-            //    for (let o = 0; o < listSymbol.length; o++) {
-            //     if (o < 50) {
-            //         listSymbol[o].isValid = 1;
-            //         listSymbol[o].symbolName += "_USE";
-            //     }      
-            //    }
+               for (let o = 0; o < listSymbol.length; o++) {
+                if (o < 30) {
+                    listSymbol[o].isValid = 1;
+                    listSymbol[o].symbol = "USE_"+ listSymbol[o].symbol;
+                }      
+               }
             Symbol.insertMany(listSymbol).then(function (result) {
                 console.log("Insert Symbol Success");
             })
