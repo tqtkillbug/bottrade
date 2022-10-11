@@ -2,8 +2,8 @@ const express = require('express')
 const app = express()
 const cors = require('cors')
 app.use(cors())
-const morgan = require('morgan')
-app.use(morgan('tiny'))
+// const morgan = require('morgan')
+// app.use(morgan('tiny'))
 
 app.set("views","chart");
 app.set("view engine","ejs");
@@ -11,14 +11,20 @@ app.use(express.static("public"));
 const ccxt = require('ccxt');
 const mongoose = require('mongoose');
 const {Ohlcv} = require("./model/ohlcv.model");
-
+const logger = require("./common/logger");
+logger.stream = {
+  write: function(message, encoding){
+      logger.info(message);
+  }
+};
+app.use(require("morgan")("combined", { "stream": logger.stream }));
 const tdvRoute = require('./routers/trading-view-client');
 const appRoute = require('./routers/app.route');
 
 const fetchData = require('./service/fetch-data');
 const fectchDataService = new fetchData();
 
-const port = process.env.PORT || 8668
+const port = 80 
 app.listen(port, () => {
     console.log(`API listening on port ${port}`)
 })

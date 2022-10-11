@@ -165,7 +165,7 @@ class FectchData {
                 }
             }
         }
-        console.log(mapSinceDB);
+        // console.log(mapSinceDB);
         return mapSinceDB;
     }
 

@@ -17,14 +17,14 @@ const logger = winston.createLogger({
         })
       ),
     transports: [
-        new(winston.transports.Console)({
-            level: logLevel,
-            colorize: true,
-            timestamp: function () {
-                return (new Date()).toLocaleTimeString();
-            },
-            prettyPrint: true
-        }),
+        // new(winston.transports.Console)({
+        //     level: logLevel,
+        //     colorize: true,
+        //     timestamp: function () {
+        //         return (new Date()).toLocaleTimeString();
+        //     },
+        //     prettyPrint: true
+        // }),
        new winston.transports.File({filename: path.join(__dirname, 'combine.log')})
     ]
 })
