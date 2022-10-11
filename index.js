@@ -36,7 +36,7 @@ mongoose.connect(MONGODB_URL, {
 },() => {
   console.log("Mongo is ready!!!!");
   // fectchDataService.getTimeStapOfSymbol();
-  // fectchDataService.fetchOHLCV();
+  fectchDataService.fetchOHLCV();
 })
 
 app.use('/api', tdvRoute);
