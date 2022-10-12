@@ -29,7 +29,7 @@ function initOnReady() {
         //	BEWARE: no trailing slash is expected in feed URL
         // datafeed: new Datafeeds.UDFCompatibleDatafeed('http://localhost:8668/api'),
         datafeed: new Datafeeds.UDFCompatibleDatafeed(datafeedUrl),
-        library_path: "charting_library/",
+        library_path: "/charting_library/",
         locale: getParameterByName('lang') || "en",
         disabled_features: ["use_localstorage_for_settings"],
         enabled_features: ["study_templates"],
