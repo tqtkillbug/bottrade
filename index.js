@@ -24,7 +24,7 @@ const appRoute = require('./routers/app.route');
 const fetchData = require('./service/fetch-data');
 const fectchDataService = new fetchData();
 
-const port = 80 
+const port = 3000 
 app.listen(port, () => {
     console.log(`API listening on port ${port}`)
 })
