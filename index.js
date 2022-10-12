@@ -30,10 +30,10 @@ app.listen(port, () => {
 })
 
 
-// const MONGODB_URL = 'mongodb+srv://tqttestfull:QulFZDx0B3HkFFEb@bottradetestv1.uv7mioh.mongodb.net/?retryWrites=true&w=majority';
+const MONGODB_URL = 'mongodb+srv://tqttestfull:QulFZDx0B3HkFFEb@bottradetestv1.uv7mioh.mongodb.net/?retryWrites=true&w=majority';
 
 //Db on vps
-const MONGODB_URL = 'mongodb://38.242.217.135:27017';
+// const MONGODB_URL = 'mongodb://38.242.217.135:27017';
 // const MONGODB_URL = 'localhost:27017';
 const BINANCE_API_KEY = "olOAqfvxf4mY7wPk2lQnRItKdbtPOCxiwDRiSYc0FTu4Mp8zDDeQEaW7z32RjzOB";
 const BINANCE_SECRET_KEY = "15fdML5Gv5VZgYQojP99PNYeQ4RqCcqU1IPN8CWf0zrJFnY0FdaUa8W6e61ebzlJ";
