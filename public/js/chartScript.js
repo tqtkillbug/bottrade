@@ -33,7 +33,7 @@ function initOnReady() {
         locale: getParameterByName('lang') || "en",
         disabled_features: ["use_localstorage_for_settings"],
         enabled_features: ["study_templates"],
-        charts_storage_url: 'https://saveload.tradingview.com',
+        // charts_storage_url: 'https://saveload.tradingview.com',
         charts_storage_api_version: "1.1",
         client_id: 'tradingview.com',
         user_id: 'public_user_id',
